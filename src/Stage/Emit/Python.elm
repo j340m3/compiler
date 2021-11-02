@@ -208,6 +208,15 @@ emitDeclaration { module_, name, body } =
             ""
 
 
+emitMainCall : List (Declaration Typed.LocatedExpr Never Qualified) -> String -> String
+emitMainCall declarationList fileString =
+    if List.any (\{ module_, name } -> module_ == "Main" && name == "main") declarationList then
+        fileString ++ "\n\nif __name__ == \"__main__\":\n\tMain___main()"
+
+    else
+        fileString
+
+
 emitProject : Project Typed.ProjectFields -> Result Error (Dict FilePath FileContents)
 emitProject project =
     Ok project
@@ -220,4 +229,5 @@ emitProject_ { declarationList } =
     declarationList
         |> List.map emitDeclaration
         |> String.join "\n"
+        |> emitMainCall declarationList
         |> Dict.singleton "out.py"
